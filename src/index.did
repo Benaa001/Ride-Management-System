@@ -40,24 +40,41 @@ type _AzleResult_1 = variant { Ok : RideReviewRecord; Err : text };
 type _AzleResult_2 = variant { Ok : vec RideRecord; Err : text };
 type _AzleResult_3 = variant { Ok : float64; Err : text };
 type _AzleResult_4 = variant { Ok : vec RideReviewRecord; Err : text };
+type _AzleResult_5 = variant { Ok : bool; Err : text };
+
 service : () -> {
+  // Ride Management
   addRide : (RidePayload) -> (_AzleResult);
-  addRideReview : (RideReviewPayload) -> (_AzleResult_1);
+  updateRide : (text, RidePayload) -> (_AzleResult);
   deleteRide : (text) -> (_AzleResult);
+  getRide : (text) -> (_AzleResult) query;
+  getAllRides : () -> (_AzleResult_2) query;
+
+  // Ride Filtering and Searching
   filterRidesByAvailableSeats : (float64) -> (_AzleResult_2) query;
   filterRidesByDateRange : (text, text) -> (_AzleResult_2) query;
-  getAllRides : () -> (_AzleResult_2) query;
-  getRide : (text) -> (_AzleResult) query;
-  getRideAverageRating : (text) -> (_AzleResult_3) query;
-  getRideReviews : (text) -> (_AzleResult_4) query;
   getRidesByProvider : (text) -> (_AzleResult_2) query;
-  searchRidesByEndLocation : (text) -> (_AzleResult_2) query;
   searchRidesByStartLocation : (text) -> (_AzleResult_2) query;
-  updateRide : (text, RidePayload) -> (_AzleResult);
+  searchRidesByEndLocation : (text) -> (_AzleResult_2) query;
+
+  // Advanced Ride Filtering
+  searchRidesByLocationAndDate : (text, text, text) -> (_AzleResult_2) query;  // (startLocation, endLocation, date)
+  filterRidesByTimeRange : (text, text) -> (_AzleResult_2) query;  // (startTime, endTime)
+
+  // Ride Reviews
+  addRideReview : (RideReviewPayload) -> (_AzleResult_1);
+  getRideReviews : (text) -> (_AzleResult_4) query;
+  getRideAverageRating : (text) -> (_AzleResult_3) query;
+  deleteRideReview : (text) -> (_AzleResult_1);
+  updateRideReview : (text, RideReviewPayload) -> (_AzleResult_1);
+  getUserReviews : (text) -> (_AzleResult_4) query;
+
+  // Utility Functions
   updateRideAvailableSeats : (text, float64) -> (_AzleResult);
   updateRideDate : (text, text) -> (_AzleResult);
-  updateRideEndLocation : (text, text) -> (_AzleResult);
+  updateRideStartTime : (text, text) -> (_AzleResult);
   updateRideEndTime : (text, text) -> (_AzleResult);
   updateRideStartLocation : (text, text) -> (_AzleResult);
-  updateRideStartTime : (text, text) -> (_AzleResult);
+  updateRideEndLocation : (text, text) -> (_AzleResult);
+  checkRideExistence : (text) -> (_AzleResult_5) query;
 }
