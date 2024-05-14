@@ -1,5 +1,4 @@
-// Importing necessary modules from the 'azle' library and 'uuid' library
-import { $query, $update, Record, StableBTreeMap, Vec, match, Result, nat64, ic, Opt, Principal } from 'azle';
+import { $query, $update, Record, StableBTreeMap, Vec, match, Result, nat64, ic, Opt } from 'azle';
 import { v4 as uuidv4 } from "uuid";
 
 // Define types for RideRecord and RidePayload
@@ -76,6 +75,35 @@ export function getRideAverageRating(rideId: string): Result<number, string> {
   return Result.Ok(averageRating);
 }
 
+// Function to delete a ride review
+$update;
+export function deleteRideReview(reviewId: string): Result<RideReviewRecord, string> {
+  return match(rideReviewStorage.remove(reviewId), {
+    Some: (deletedReview) => Result.Ok(deletedReview),
+    None: () => Result.Err(`Review with id=${reviewId} not found`)
+  });
+}
+
+// Function to update a ride review
+$update;
+export function updateRideReview(id: string, payload: RideReviewPayload): Result<RideReviewRecord, string> {
+  return match(rideReviewStorage.get(id), {
+    Some: (record) => {
+      const updatedReview: RideReviewRecord = { ...record, ...payload, createdAt: record.createdAt };
+      rideReviewStorage.insert(record.id, updatedReview);
+      return Result.Ok(updatedReview);
+    },
+    None: () => Result.Err(`Review with id=${id} not found`)
+  });
+}
+
+// Function to get all reviews by a specific user
+$query;
+export function getUserReviews(userId: string): Result<Vec<RideReviewRecord>, string> {
+  const reviews = rideReviewStorage.values().filter(review => review.userId === userId);
+  return Result.Ok(reviews);
+}
+
 // Function to add a ride
 $update;
 export function addRide(payload: RidePayload): Result<RideRecord, string> {
@@ -91,9 +119,9 @@ export function updateRide(id: string, payload: RidePayload): Result<RideRecord,
     Some: (record) => {
       const updatedRecord: RideRecord = { ...record, ...payload, updatedAt: Opt.Some(ic.time()) };
       rideStorage.insert(record.id, updatedRecord);
-      return Result.Ok<RideRecord, string>(updatedRecord);
+      return Result.Ok(updatedRecord);
     },
-    None: () => Result.Err<RideRecord, string>(`Ride with id=${id} not found`)
+    None: () => Result.Err(`Ride with id=${id} not found`)
   });
 }
 
@@ -101,8 +129,8 @@ export function updateRide(id: string, payload: RidePayload): Result<RideRecord,
 $update;
 export function deleteRide(id: string): Result<RideRecord, string> {
   return match(rideStorage.remove(id), {
-    Some: (deletedRecord) => Result.Ok<RideRecord, string>(deletedRecord),
-    None: () => Result.Err<RideRecord, string>(`Ride with id=${id} not found`)
+    Some: (deletedRecord) => Result.Ok(deletedRecord),
+    None: () => Result.Err(`Ride with id=${id} not found`)
   });
 }
 
@@ -110,8 +138,8 @@ export function deleteRide(id: string): Result<RideRecord, string> {
 $query;
 export function getRide(id: string): Result<RideRecord, string> {
   return match(rideStorage.get(id), {
-    Some: (record) => Result.Ok<RideRecord, string>(record),
-    None: () => Result.Err<RideRecord, string>(`Ride with id=${id} not found`)
+    Some: (record) => Result.Ok(record),
+    None: () => Result.Err(`Ride with id=${id} not found`)
   });
 }
 
@@ -144,9 +172,9 @@ export function updateRideAvailableSeats(id: string, newAvailableSeats: number):
     Some: (record) => {
       const updatedRecord: RideRecord = { ...record, availableSeats: newAvailableSeats, updatedAt: Opt.Some(ic.time()) };
       rideStorage.insert(record.id, updatedRecord);
-      return Result.Ok<RideRecord, string>(updatedRecord);
+      return Result.Ok(updatedRecord);
     },
-    None: () => Result.Err<RideRecord, string>(`Ride with id=${id} not found`)
+    None: () => Result.Err(`Ride with id=${id} not found`)
   });
 }
 
@@ -180,9 +208,9 @@ export function updateRideStartLocation(id: string, newStartLocation: string): R
     Some: (record) => {
       const updatedRecord: RideRecord = { ...record, startLocation: newStartLocation, updatedAt: Opt.Some(ic.time()) };
       rideStorage.insert(record.id, updatedRecord);
-      return Result.Ok<RideRecord, string>(updatedRecord);
+      return Result.Ok(updatedRecord);
     },
-    None: () => Result.Err<RideRecord, string>(`Ride with id=${id} not found`)
+    None: () => Result.Err(`Ride with id=${id} not found`)
   });
 }
 
@@ -193,9 +221,9 @@ export function updateRideEndLocation(id: string, newEndLocation: string): Resul
     Some: (record) => {
       const updatedRecord: RideRecord = { ...record, endLocation: newEndLocation, updatedAt: Opt.Some(ic.time()) };
       rideStorage.insert(record.id, updatedRecord);
-      return Result.Ok<RideRecord, string>(updatedRecord);
+      return Result.Ok(updatedRecord);
     },
-    None: () => Result.Err<RideRecord, string>(`Ride with id=${id} not found`)
+    None: () => Result.Err(`Ride with id=${id} not found`)
   });
 }
 
@@ -206,9 +234,9 @@ export function updateRideDate(id: string, newDate: string): Result<RideRecord, 
     Some: (record) => {
       const updatedRecord: RideRecord = { ...record, date: newDate, updatedAt: Opt.Some(ic.time()) };
       rideStorage.insert(record.id, updatedRecord);
-      return Result.Ok<RideRecord, string>(updatedRecord);
+      return Result.Ok(updatedRecord);
     },
-    None: () => Result.Err<RideRecord, string>(`Ride with id=${id} not found`)
+    None: () => Result.Err(`Ride with id=${id} not found`)
   });
 }
 
@@ -219,9 +247,9 @@ export function updateRideStartTime(id: string, newStartTime: string): Result<Ri
     Some: (record) => {
       const updatedRecord: RideRecord = { ...record, startTime: newStartTime, updatedAt: Opt.Some(ic.time()) };
       rideStorage.insert(record.id, updatedRecord);
-      return Result.Ok<RideRecord, string>(updatedRecord);
+      return Result.Ok(updatedRecord);
     },
-    None: () => Result.Err<RideRecord, string>(`Ride with id=${id} not found`)
+    None: () => Result.Err(`Ride with id=${id} not found`)
   });
 }
 
@@ -232,10 +260,36 @@ export function updateRideEndTime(id: string, newEndTime: string): Result<RideRe
     Some: (record) => {
       const updatedRecord: RideRecord = { ...record, endTime: newEndTime, updatedAt: Opt.Some(ic.time()) };
       rideStorage.insert(record.id, updatedRecord);
-      return Result.Ok<RideRecord, string>(updatedRecord);
+      return Result.Ok(updatedRecord);
     },
-    None: () => Result.Err<RideRecord, string>(`Ride with id=${id} not found`)
+    None: () => Result.Err(`Ride with id=${id} not found`)
   });
+}
+
+// Function to search rides by location and date
+$query;
+export function searchRidesByLocationAndDate(startLocation: string, endLocation: string, date: string): Result<Vec<RideRecord>, string> {
+  const records = rideStorage.values();
+  const filteredRides = records.filter(ride => 
+    ride.startLocation.toLowerCase() === startLocation.toLowerCase() && 
+    ride.endLocation.toLowerCase() === endLocation.toLowerCase() && 
+    ride.date === date
+  );
+  return Result.Ok(filteredRides);
+}
+
+// Function to filter rides by time range
+$query;
+export function filterRidesByTimeRange(startTime: string, endTime: string): Result<Vec<RideRecord>, string> {
+  const records = rideStorage.values();
+  const filteredRides = records.filter(ride => ride.startTime >= startTime && ride.endTime <= endTime);
+  return Result.Ok(filteredRides);
+}
+
+// Function to check if a ride exists
+$query;
+export function checkRideExistence(id: string): Result<boolean, string> {
+  return Result.Ok(rideStorage.containsKey(id));
 }
 
 // Mocking the 'crypto' object for testing purposes
@@ -243,11 +297,9 @@ globalThis.crypto = {
   // @ts-ignore
   getRandomValues: () => {
     let array = new Uint8Array(32);
-
     for (let i = 0; i < array.length; i++) {
       array[i] = Math.floor(Math.random() * 256);
     }
-
     return array;
   },
 };
